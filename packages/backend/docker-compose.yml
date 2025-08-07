@@ -1,0 +1,27 @@
+# Kuna Backend - Coolify Docker Compose
+version: '3.8'
+
+services:
+  kuna-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-8002}:8002"
+    environment:
+      - DATABASE_URL=sqlite:///./data/therapist_matching.db
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PORT=${PORT:-8002}
+    volumes:
+      - kuna_database:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8002')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  kuna_database:
+    external: true

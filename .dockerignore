@@ -1,0 +1,5 @@
+# never copy host dependencies
+node_modules
+dist
+.vite
+npm-debug.log

@@ -1,0 +1,21 @@
+{
+  "name": "@kuna/backend",
+  "version": "1.0.0",
+  "description": "Kuna therapist matching backend API",
+  "main": "main.py",
+  "scripts": {
+    "dev": "python main.py",
+    "start": "python main.py",
+    "migrate": "python migrate_therapist_table.py",
+    "test": "python test_enhanced_registration.py"
+  },
+  "dependencies": {},
+  "keywords": [
+    "fastapi",
+    "therapist",
+    "matching",
+    "api"
+  ],
+  "author": "Kuna Team",
+  "license": "MIT"
+}

@@ -1,0 +1,54 @@
+# Coolify Application Configuration for Kuna Therapist Matching
+# This file defines the deployment configuration for Coolify
+
+# Backend Service
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kuna-backend-config
+data:
+  # Backend configuration
+  backend-compose: |
+    services:
+      kuna-backend:
+        image: ghcr.io/your-username/kuna-backend:latest
+        ports:
+          - "8002:8002"
+        environment:
+          - DATABASE_URL=sqlite:///./data/therapist_matching.db
+          - GEMINI_API_KEY=${GEMINI_API_KEY}
+        volumes:
+          - kuna_database:/app/data
+        restart: unless-stopped
+        healthcheck:
+          test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8002/health')"]
+          interval: 30s
+          timeout: 10s
+          retries: 3
+          start_period: 40s
+    
+    volumes:
+      kuna_database:
+
+---
+# Frontend Service
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kuna-frontend-config
+data:
+  frontend-compose: |
+    services:
+      kuna-frontend:
+        image: ghcr.io/your-username/kuna-frontend:latest
+        ports:
+          - "80:80"
+        environment:
+          - VITE_API_URL=https://api.yourdomain.com
+        restart: unless-stopped
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost/health"]
+          interval: 30s
+          timeout: 10s
+          retries: 3
+          start_period: 40s

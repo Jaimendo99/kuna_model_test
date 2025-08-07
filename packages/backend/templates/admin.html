@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Admin Panel</h1>
+        
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="questions-tab" data-bs-toggle="tab" 
+                        data-bs-target="#questions" type="button" role="tab">
+                    Questionnaire Management
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="therapists-tab" data-bs-toggle="tab" 
+                        data-bs-target="#therapists" type="button" role="tab">
+                    Therapist Management
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="adminTabsContent">
+            <!-- Questions Tab -->
+            <div class="tab-pane fade show active" id="questions" role="tabpanel">
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h4>Add New Question</h4>
+                        <form id="questionForm">
+                            <div class="mb-3">
+                                <label for="questionText" class="form-label">Question Text</label>
+                                <textarea class="form-control" id="questionText" name="question_text" 
+                                          rows="3" required></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="questionType" class="form-label">Question Type</label>
+                                <select class="form-select" id="questionType" name="question_type" required>
+                                    <option value="">Select type...</option>
+                                    <option value="multiple_choice">Multiple Choice</option>
+                                    <option value="single_choice">Single Choice</option>
+                                    <option value="scale">Scale (1-10)</option>
+                                    <option value="text_input">Text Input</option>
+                                    <option value="yes_no">Yes/No</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3" id="optionsContainer" style="display: none;">
+                                <label for="options" class="form-label">Options (one per line)</label>
+                                <textarea class="form-control" id="options" name="options" 
+                                          rows="4" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="displayOrder" class="form-label">Display Order</label>
+                                <input type="number" class="form-control" id="displayOrder" 
+                                       name="display_order" value="1" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Add Question</button>
+                        </form>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h4>Existing Questions</h4>
+                        <div id="questionsList" class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                            <!-- Questions will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Therapists Tab -->
+            <div class="tab-pane fade" id="therapists" role="tabpanel">
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h4>Add New Therapist</h4>
+                        <form id="therapistForm">
+                            <div class="mb-3">
+                                <label for="therapistName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="therapistName" 
+                                       name="name" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="specialties" class="form-label">Specialties (comma-separated)</label>
+                                <input type="text" class="form-control" id="specialties" 
+                                       name="specialties" placeholder="Anxiety, Depression, Relationships">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="approaches" class="form-label">Therapeutic Approaches (comma-separated)</label>
+                                <input type="text" class="form-control" id="approaches" 
+                                       name="therapeutic_approaches" placeholder="CBT, DBT, Psychodynamic">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="sessionPrice" class="form-label">Session Price ($)</label>
+                                        <input type="number" class="form-control" id="sessionPrice" 
+                                               name="session_price" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="yearsExperience" class="form-label">Years Experience</label>
+                                        <input type="number" class="form-control" id="yearsExperience" 
+                                               name="years_experience" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="country" class="form-label">Country</label>
+                                        <input type="text" class="form-control" id="country" name="country" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="city" class="form-label">City</label>
+                                        <input type="text" class="form-control" id="city" name="city" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="languages" class="form-label">Languages (comma-separated)</label>
+                                <input type="text" class="form-control" id="languages" 
+                                       name="languages" placeholder="English, Spanish, French">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="remote" name="remote">
+                                    <label class="form-check-label" for="remote">
+                                        Offers Remote Sessions
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="onSite" name="on_site">
+                                    <label class="form-check-label" for="onSite">
+                                        Offers In-Person Sessions
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="4" required></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Add Therapist</button>
+                        </form>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h4>Existing Therapists</h4>
+                        <div id="therapistsList" class="border rounded p-3" style="max-height: 500px; overflow-y: auto;">
+                            <!-- Therapists will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide options field based on question type
+document.getElementById('questionType').addEventListener('change', function() {
+    const optionsContainer = document.getElementById('optionsContainer');
+    const needsOptions = ['multiple_choice', 'single_choice'].includes(this.value);
+    optionsContainer.style.display = needsOptions ? 'block' : 'none';
+});
+
+// Load questions
+async function loadQuestions() {
+    try {
+        const response = await fetch('/api/admin/questions');
+        const questions = await response.json();
+        
+        const container = document.getElementById('questionsList');
+        container.innerHTML = questions.map(q => `
+            <div class="mb-2 p-2 border-bottom">
+                <div class="d-flex justify-content-between">
+                    <strong>Order ${q.display_order}</strong>
+                    <span class="badge bg-secondary">${q.question_type}</span>
+                </div>
+                <div class="mt-1">${q.question_text}</div>
+                ${q.options ? `<small class="text-muted">Options: ${q.options.join(', ')}</small>` : ''}
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading questions:', error);
+    }
+}
+
+// Load therapists
+async function loadTherapists() {
+    try {
+        const response = await fetch('/api/admin/therapists');
+        const therapists = await response.json();
+        
+        const container = document.getElementById('therapistsList');
+        container.innerHTML = therapists.map(t => `
+            <div class="mb-2 p-2 border-bottom">
+                <div class="d-flex justify-content-between">
+                    <strong>${t.name}</strong>
+                    <span class="text-muted">$${t.session_price}</span>
+                </div>
+                <div class="small text-muted">
+                    ${t.specialties.join(', ')} | ${t.city}, ${t.country}
+                    ${t.remote ? ' | Remote' : ''}${t.on_site ? ' | In-Person' : ''}
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading therapists:', error);
+    }
+}
+
+// Question form submission
+document.getElementById('questionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        question_text: formData.get('question_text'),
+        question_type: formData.get('question_type'),
+        display_order: parseInt(formData.get('display_order'))
+    };
+    
+    // Handle options
+    if (['multiple_choice', 'single_choice'].includes(data.question_type)) {
+        const optionsText = formData.get('options');
+        data.options = optionsText ? optionsText.split('\n').filter(opt => opt.trim()) : [];
+    }
+    
+    try {
+        const response = await fetch('/api/admin/questions', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            this.reset();
+            document.getElementById('optionsContainer').style.display = 'none';
+            loadQuestions();
+            alert('Question added successfully!');
+        } else {
+            const error = await response.json();
+            alert('Error: ' + (error.detail || 'Something went wrong'));
+        }
+    } catch (error) {
+        alert('Network error: ' + error.message);
+    }
+});
+
+// Therapist form submission
+document.getElementById('therapistForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        name: formData.get('name'),
+        specialties: formData.get('specialties').split(',').map(s => s.trim()).filter(s => s),
+        therapeutic_approaches: formData.get('therapeutic_approaches').split(',').map(s => s.trim()).filter(s => s),
+        session_price: parseFloat(formData.get('session_price')),
+        country: formData.get('country'),
+        city: formData.get('city'),
+        remote: formData.has('remote'),
+        on_site: formData.has('on_site'),
+        bio: formData.get('bio'),
+        years_experience: parseInt(formData.get('years_experience')),
+        languages: formData.get('languages').split(',').map(s => s.trim()).filter(s => s)
+    };
+    
+    try {
+        const response = await fetch('/api/admin/therapists', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            this.reset();
+            loadTherapists();
+            alert('Therapist added successfully!');
+        } else {
+            const error = await response.json();
+            alert('Error: ' + (error.detail || 'Something went wrong'));
+        }
+    } catch (error) {
+        alert('Network error: ' + error.message);
+    }
+});
+
+// Load data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadQuestions();
+    loadTherapists();
+});
+</script>
+{% endblock %}

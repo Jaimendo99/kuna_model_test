@@ -1,0 +1,19 @@
+# Kuna Frontend - Coolify Docker Compose
+version: '3.8'
+
+services:
+  kuna-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-80}:80"
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8002}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

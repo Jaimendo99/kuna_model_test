@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="text-center mb-4">Model Comparison Results</h1>
+        <p class="text-center text-muted mb-4">
+            Here are the therapist matches from different AI models. 
+            Click on your preferred match and model to help us improve our recommendations!
+        </p>
+
+        <div class="alert alert-info">
+            <strong>Instructions:</strong> Review the matches from each model below. 
+            When you find a therapist you like, click on them and then select which model found the best match for you.
+        </div>
+
+        <div class="row">
+            {% for result in model_results %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="model-card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            {% if result.model_name == 'random' %}
+                                Model {{ loop.index }}
+                            {% else %}
+                                Model {{ loop.index }}
+                            {% endif %}
+                        </h5>
+                    </div>
+
+                    <div class="therapists-container">
+                        {% for match in result.matches %}
+                        <div class="therapist-card" 
+                             data-model="{{ result.model_name }}" 
+                             data-therapist-id="{{ match.id }}">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-1">{{ match.name }}</h6>
+                                {% if match.match_score %}
+                                <span class="match-score">{{ match.match_score }}%</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-2">
+                                <strong>Specialties:</strong> 
+                                <span class="text-muted">{{ match.specialties|join(", ") }}</span>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <strong>Approaches:</strong> 
+                                <span class="text-muted">{{ match.therapeutic_approaches|join(", ") }}</span>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <strong>Price:</strong> ${{ "%.2f"|format(match.session_price) }} per session
+                            </div>
+                            
+                            <div class="mb-2">
+                                <strong>Location:</strong> {{ match.city }}, {{ match.country }}
+                                {% if match.remote %}<span class="badge bg-success ms-1">Remote</span>{% endif %}
+                                {% if match.on_site %}<span class="badge bg-primary ms-1">In-Person</span>{% endif %}
+                            </div>
+                            
+                            {% if match.match_reason %}
+                            <div class="mb-2">
+                                <strong>Why this match:</strong> 
+                                <small class="text-muted">{{ match.match_reason }}</small>
+                            </div>
+                            {% endif %}
+                            
+                            <details>
+                                <summary class="text-primary" style="cursor: pointer;">View Bio</summary>
+                                <p class="mt-2 small">{{ match.bio }}</p>
+                            </details>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Selection Form -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Which model gave you the best match?</h5>
+                <form id="selectionForm">
+                    <input type="hidden" id="comparisonId" value="{{ comparison.id }}">
+                    <input type="hidden" id="selectedModel" name="selected_model">
+                    <input type="hidden" id="selectedTherapist" name="selected_therapist_id">
+                    
+                    <div class="mb-3">
+                        <label for="feedback" class="form-label">Additional Feedback (Optional)</label>
+                        <textarea class="form-control" id="feedback" name="feedback" rows="3" 
+                                  placeholder="Tell us why you preferred this match..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-lg" id="submitBtn" disabled>
+                        Submit My Selection
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Thank you message -->
+        <div id="thankYou" class="alert alert-success mt-4" style="display: none;">
+            <h5>Thank you for your feedback!</h5>
+            <p>Your selection has been recorded and will help us improve our AI matching algorithms.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedModel = null;
+let selectedTherapist = null;
+
+// Handle therapist card selection
+document.querySelectorAll('.therapist-card').forEach(card => {
+    card.addEventListener('click', function() {
+        // Remove previous selections
+        document.querySelectorAll('.therapist-card').forEach(c => c.classList.remove('selected'));
+        
+        // Select this card
+        this.classList.add('selected');
+        
+        selectedModel = this.dataset.model;
+        selectedTherapist = this.dataset.therapistId;
+        
+        // Update form fields
+        document.getElementById('selectedModel').value = selectedModel;
+        document.getElementById('selectedTherapist').value = selectedTherapist;
+        
+        // Enable submit button
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('submitBtn').textContent = 'Submit My Selection';
+    });
+});
+
+// Handle form submission
+document.getElementById('selectionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        comparison_id: document.getElementById('comparisonId').value,
+        selected_model: formData.get('selected_model'),
+        selected_therapist_id: formData.get('selected_therapist_id'),
+        feedback: formData.get('feedback')
+    };
+    
+    try {
+        const response = await fetch('/api/user-selection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            document.getElementById('thankYou').style.display = 'block';
+            this.style.display = 'none';
+            
+            // Scroll to thank you message
+            document.getElementById('thankYou').scrollIntoView({ behavior: 'smooth' });
+        } else {
+            const error = await response.json();
+            alert('Error: ' + (error.detail || 'Something went wrong'));
+        }
+    } catch (error) {
+        alert('Network error: ' + error.message);
+    }
+});
+</script>
+{% endblock %}

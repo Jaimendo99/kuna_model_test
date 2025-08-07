@@ -1,0 +1,17 @@
+{
+  "name": "@kuna/database",
+  "version": "1.0.0",
+  "description": "Kuna therapist matching database configuration and migrations",
+  "main": "init.sql",
+  "scripts": {
+    "migrate": "python migrate_therapist_table.py",
+    "init": "sqlite3 therapist_matching.db < init.sql"
+  },
+  "keywords": [
+    "sqlite",
+    "database",
+    "migration"
+  ],
+  "author": "Kuna Team",
+  "license": "MIT"
+}
