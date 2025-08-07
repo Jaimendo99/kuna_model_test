@@ -19,16 +19,18 @@ from auth import authenticate_user, create_access_token, get_current_admin
 
 app = FastAPI(title="Therapist Matching API", version="1.0.0")
 
-# CORS configuration for different environments
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
     "https://your-domain.com",  # Replace with your actual domain
+    "http://192.168.100.202:3000",
 ]
 
 # Add additional origins from environment
 if os.getenv("FRONTEND_URL"):
     ALLOWED_ORIGINS.append(os.getenv("FRONTEND_URL"))
+
+print(ALLOWED_ORIGINS)
 
 # Add CORS middleware for React frontend
 app.add_middleware(

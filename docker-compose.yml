@@ -6,16 +6,17 @@ services:
       context: ./packages/backend
       dockerfile: Dockerfile
     ports:
-      - "8002:8002"
+      - "8002:8000" # Mapped external 8002 to internal 8000
     volumes:
       - database_data:/app/data
       - ./packages/backend:/app
     environment:
       - DATABASE_URL=sqlite:///./data/therapist_matching.db
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FRONTEND_URL=${FRONTEND_URL} # <--- Is this line PRESENT and EXACTLY like this?
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"] # Updated to port 8000
       interval: 30s
       timeout: 10s
       retries: 3
@@ -30,6 +31,8 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8002}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
