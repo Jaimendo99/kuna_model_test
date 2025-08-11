@@ -23,6 +23,7 @@ ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3000",
+    "https://model.kuna.lat",
     "https://your-domain.com",  # Replace with your actual domain
     "http://192.168.100.202:3000",
 ]
