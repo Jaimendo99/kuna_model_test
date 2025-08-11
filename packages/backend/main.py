@@ -22,6 +22,7 @@ app = FastAPI(title="Therapist Matching API", version="1.0.0")
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
+    "http://127.0.0.1:3000",
     "https://your-domain.com",  # Replace with your actual domain
     "http://192.168.100.202:3000",
 ]
