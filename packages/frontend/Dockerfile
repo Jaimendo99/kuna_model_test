@@ -1,25 +1,28 @@
-# ---------- build stage ----------
+# Dockerfile (frontend) — build-time VITE_API_URL support
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# package.json (and lock file if it appears)
+# allow passing build-time value
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 COPY package*.json ./
-# Use npm install when there is no lock-file
 RUN npm install --include=dev
 
 COPY . .
+
+# write production .env consumed by Vite during build
+RUN echo "VITE_API_URL=$VITE_API_URL" > .env.production
+
 RUN npm run build
 
-COPY .env ./
-
-
-# ---------- runtime stage ----------
 FROM nginx:alpine AS runtime
 COPY --from=builder /app/dist /usr/share/nginx/html
-# COPY the custom nginx.conf into the Nginx default config location
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
-# optional health-check
-HEALTHCHECK CMD curl -f http://localhost/health || exit 1 # Keep this if nginx.conf has /health
+# ensure curl exists for healthcheck, or remove healthcheck here if not needed
+RUN apk add --no-cache curl
+HEALTHCHECK CMD curl -f http://localhost/health || exit 1
+
 CMD ["nginx", "-g", "daemon off;"]
