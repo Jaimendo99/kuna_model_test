@@ -17,6 +17,7 @@
     "migrate": "cd packages/backend && python migrate_therapist_table.py"
   },
   "devDependencies": {
+    "@types/node": "^24.2.1",
     "concurrently": "^8.2.0"
   },
   "repository": {

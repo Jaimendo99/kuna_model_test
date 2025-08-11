@@ -9,6 +9,9 @@ export default defineConfig({
       "@": "/src",
     },
   },
+  define: {
+    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || '/api')
+  },
   server: {
     port: 3000,
     proxy: {
