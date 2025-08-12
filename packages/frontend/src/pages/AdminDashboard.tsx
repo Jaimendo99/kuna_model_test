@@ -198,16 +198,6 @@ const AdminDashboard: React.FC = () => {
                 Iniciar Sesión
               </Button>
             </form>
-
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
-              <p className="text-blue-800">
-                <strong>Credenciales de prueba:</strong>
-                <br />
-                Email: admin@kuna.com
-                <br />
-                Contraseña: secret123
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>

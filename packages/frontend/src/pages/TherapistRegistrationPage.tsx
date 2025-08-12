@@ -787,7 +787,9 @@ const TherapistRegistrationPage: React.FC = () => {
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl flex justify-between">
             <button
               type="button"
-              onClick={() => navigate("/")}
+              onClick={() => {
+                // navigate("/")
+              }}
               className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
             >
               Cancelar
