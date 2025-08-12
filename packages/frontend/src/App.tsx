@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import WelcomePage from "./pages/WelcomePage";
+// import WelcomePage from "./pages/WelcomePage";
 import QuestionnairePage from "./pages/QuestionnairePage";
 import ResultsPage from "./pages/ResultsPage";
 import ThankYouPage from "./pages/ThankYouPage";
@@ -12,7 +12,7 @@ export default function App() {
     <Router>
       <div className="min-h-screen bg-background">
         <Routes>
-          <Route path="/" element={<WelcomePage />} />
+          {/* <Route path="/" element={<WelcomePage />} /> */}
           <Route path="/questionnaire" element={<QuestionnairePage />} />
           <Route path="/results/:sessionId" element={<ResultsPage />} />
           <Route path="/thank-you" element={<ThankYouPage />} />

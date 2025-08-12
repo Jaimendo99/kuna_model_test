@@ -148,15 +148,54 @@ const TherapistRegistrationPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Required text/number fields
     if (
       !formData.name ||
+      !formData.professional_id_number ||
       !formData.email ||
-      formData.specialties.length === 0 ||
-      formData.therapeutic_style.length > 2
+      !formData.country ||
+      !formData.city ||
+      !formData.weekly_availability ||
+      !formData.commitment_level ||
+      !formData.session_price ||
+      !formData.years_experience ||
+      !formData.bio
     ) {
-      alert(
-        "Por favor completa los campos obligatorios y selecciona máximo 2 estilos terapéuticos"
-      );
+      alert("Por favor completa todos los campos obligatorios.");
+      return;
+    }
+
+    // Required checkbox groups
+    if (formData.specialties.length === 0) {
+      alert("Selecciona al menos una especialidad.");
+      return;
+    }
+    if (formData.languages.length === 0) {
+      alert("Selecciona al menos un idioma.");
+      return;
+    }
+    if (formData.therapeutic_approaches.length === 0) {
+      alert("Selecciona al menos un enfoque terapéutico.");
+      return;
+    }
+    if (formData.therapeutic_style.length === 0) {
+      alert("Selecciona al menos un estilo terapéutico.");
+      return;
+    }
+    if (formData.age_groups.length === 0) {
+      alert("Selecciona al menos un rango de edad.");
+      return;
+    }
+
+    // Validate at least one modality is selected
+    if (!formData.remote && !formData.on_site && !formData.hybrid) {
+      alert("Selecciona al menos una modalidad de atención.");
+      return;
+    }
+
+    // Max 2 styles
+    if (formData.therapeutic_style.length > 2) {
+      alert("Selecciona máximo 2 estilos terapéuticos.");
       return;
     }
 
@@ -222,7 +261,7 @@ const TherapistRegistrationPage: React.FC = () => {
                       htmlFor="professional_id_number"
                       className="block text-sm font-semibold text-gray-900"
                     >
-                      Número de cédula profesional / registro local
+                      Número de cédula profesional / registro local *
                     </label>
                     <input
                       id="professional_id_number"
@@ -234,6 +273,7 @@ const TherapistRegistrationPage: React.FC = () => {
                         )
                       }
                       placeholder="Número de cédula o registro profesional"
+                      required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
@@ -261,7 +301,7 @@ const TherapistRegistrationPage: React.FC = () => {
               {/* 3. Modalidades de atención */}
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2">
-                  3. Modalidades de atención que ofreces
+                  3. Modalidades de atención que ofreces *
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
@@ -312,7 +352,7 @@ const TherapistRegistrationPage: React.FC = () => {
               {/* 4. Ubicación */}
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2">
-                  4. Ubicación (si das atención presencial)
+                  4. Ubicación (si das atención presencial) *
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -329,6 +369,7 @@ const TherapistRegistrationPage: React.FC = () => {
                         handleInputChange("country", e.target.value)
                       }
                       placeholder="México, Colombia, Argentina, etc."
+                      required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
@@ -346,6 +387,7 @@ const TherapistRegistrationPage: React.FC = () => {
                         handleInputChange("city", e.target.value)
                       }
                       placeholder="Ciudad de México, Bogotá, Buenos Aires, etc."
+                      required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
@@ -355,7 +397,7 @@ const TherapistRegistrationPage: React.FC = () => {
               {/* 5. Idiomas */}
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2">
-                  5. Idiomas en los que puedes brindar terapia
+                  5. Idiomas en los que puedes brindar terapia *
                 </h3>
                 <div className="space-y-3">
                   {LANGUAGES_OPTIONS.map((language) => (
@@ -466,7 +508,7 @@ const TherapistRegistrationPage: React.FC = () => {
               {/* 7. Enfoques terapéuticos */}
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2">
-                  7. Enfoques terapéuticos que utilizas regularmente
+                  7. Enfoques terapéuticos que utilizas regularmente *
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {APPROACHES_OPTIONS.map((approach) => (
@@ -523,6 +565,7 @@ const TherapistRegistrationPage: React.FC = () => {
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2">
                   8. ¿Cómo describirías tu estilo o tono terapéutico? (Máximo 2)
+                  *
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {THERAPEUTIC_STYLE_OPTIONS.map((style) => (
@@ -590,7 +633,7 @@ const TherapistRegistrationPage: React.FC = () => {
               {/* 9. Rangos de edad */}
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2">
-                  9. ¿A qué rangos de edad prefieres atender?
+                  9. ¿A qué rangos de edad prefieres atender? *
                 </h3>
                 <div className="space-y-3">
                   {AGE_GROUPS_OPTIONS.map((group) => (
@@ -622,7 +665,7 @@ const TherapistRegistrationPage: React.FC = () => {
               {/* 10. Disponibilidad semanal */}
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2">
-                  10. ¿Cuál es tu disponibilidad semanal promedio?
+                  10. ¿Cuál es tu disponibilidad semanal promedio? *
                 </h3>
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
@@ -635,6 +678,7 @@ const TherapistRegistrationPage: React.FC = () => {
                     }
                     placeholder="Ej: Lunes a viernes de 9:00 AM a 6:00 PM, Sábados de 10:00 AM a 2:00 PM"
                     rows={3}
+                    required
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 resize-none"
                   />
                 </div>
@@ -644,7 +688,7 @@ const TherapistRegistrationPage: React.FC = () => {
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2">
                   11. ¿Qué nivel de compromiso estás dispuesto/a asumir con
-                  Kuna?
+                  Kuna? *
                 </h3>
                 <div className="space-y-3">
                   {COMMITMENT_LEVELS.map((level) => (
@@ -683,7 +727,7 @@ const TherapistRegistrationPage: React.FC = () => {
                       htmlFor="years_experience"
                       className="block text-sm font-semibold text-gray-900"
                     >
-                      Años de Experiencia
+                      Años de Experiencia *
                     </label>
                     <input
                       id="years_experience"
@@ -697,6 +741,7 @@ const TherapistRegistrationPage: React.FC = () => {
                       }
                       placeholder="5"
                       min="0"
+                      required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
@@ -706,7 +751,7 @@ const TherapistRegistrationPage: React.FC = () => {
                       htmlFor="session_price"
                       className="block text-sm font-semibold text-gray-900"
                     >
-                      Precio por Sesión (USD)
+                      Precio por Sesión (USD) *
                     </label>
                     <input
                       id="session_price"
@@ -721,6 +766,7 @@ const TherapistRegistrationPage: React.FC = () => {
                       placeholder="60"
                       min="0"
                       step="0.01"
+                      required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
@@ -731,7 +777,7 @@ const TherapistRegistrationPage: React.FC = () => {
                     htmlFor="bio"
                     className="block text-sm font-semibold text-gray-900"
                   >
-                    Biografía Profesional
+                    Biografía Profesional *
                   </label>
                   <textarea
                     id="bio"
@@ -739,6 +785,7 @@ const TherapistRegistrationPage: React.FC = () => {
                     onChange={(e) => handleInputChange("bio", e.target.value)}
                     placeholder="Describe tu experiencia, formación y enfoque terapéutico..."
                     rows={4}
+                    required
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 resize-none"
                   />
                 </div>
@@ -787,9 +834,7 @@ const TherapistRegistrationPage: React.FC = () => {
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl flex justify-between">
             <button
               type="button"
-              onClick={() => {
-                // navigate("/")
-              }}
+              onClick={() => navigate("/")}
               className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
             >
               Cancelar
