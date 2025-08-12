@@ -1,3 +1,12 @@
+/// <reference types="vite/client" />
+
+interface ImportMeta {
+  readonly env: {
+    readonly VITE_API_URL: string;
+    [key: string]: string | boolean | undefined;
+  };
+}
+
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +40,8 @@ interface Session {
   user_selections_count: number;
 }
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const AdminDashboard: React.FC = () => {
   const [token, setToken] = useState(localStorage.getItem("adminToken"));
   const [email, setEmail] = useState("");
@@ -52,7 +63,7 @@ const AdminDashboard: React.FC = () => {
       formData.append("email", email);
       formData.append("password", password);
 
-      const response = await fetch("http://localhost:8002/api/admin/login", {
+      const response = await fetch(`${API_BASE}/admin/login`, {
         method: "POST",
         body: formData,
       });
@@ -73,14 +84,11 @@ const AdminDashboard: React.FC = () => {
   const fetchTherapists = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        "http://localhost:8002/api/admin/therapists",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_BASE}/admin/therapists`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -99,7 +107,7 @@ const AdminDashboard: React.FC = () => {
   const fetchSessions = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:8002/api/admin/sessions", {
+      const response = await fetch(`${API_BASE}/admin/sessions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -126,7 +134,7 @@ const AdminDashboard: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8002/api/admin/therapists/${therapistId}`,
+        `${API_BASE}/admin/therapists/${therapistId}`,
         {
           method: "DELETE",
           headers: {
