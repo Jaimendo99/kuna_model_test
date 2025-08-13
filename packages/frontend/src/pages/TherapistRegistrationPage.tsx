@@ -14,7 +14,6 @@ interface TherapistFormData {
   city: string;
   remote: boolean;
   on_site: boolean;
-  hybrid: boolean;
   bio: string;
   years_experience: number;
   languages: string[];
@@ -91,7 +90,6 @@ const TherapistRegistrationPage: React.FC = () => {
     city: "",
     remote: false,
     on_site: false,
-    hybrid: false,
     bio: "",
     years_experience: 0,
     languages: [],
@@ -188,7 +186,7 @@ const TherapistRegistrationPage: React.FC = () => {
     }
 
     // Validate at least one modality is selected
-    if (!formData.remote && !formData.on_site && !formData.hybrid) {
+    if (!formData.remote && !formData.on_site) {
       alert("Selecciona al menos una modalidad de atención.");
       return;
     }
@@ -330,20 +328,6 @@ const TherapistRegistrationPage: React.FC = () => {
                     />
                     <label htmlFor="on_site" className="text-sm text-gray-700">
                       Presencial
-                    </label>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <input
-                      id="hybrid"
-                      type="checkbox"
-                      checked={formData.hybrid}
-                      onChange={(e) =>
-                        handleInputChange("hybrid", e.target.checked)
-                      }
-                      className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
-                    />
-                    <label htmlFor="hybrid" className="text-sm text-gray-700">
-                      Híbrido (ambos)
                     </label>
                   </div>
                 </div>
@@ -732,14 +716,18 @@ const TherapistRegistrationPage: React.FC = () => {
                     <input
                       id="years_experience"
                       type="number"
-                      value={formData.years_experience}
+                      value={
+                        formData.years_experience === 0
+                          ? ""
+                          : formData.years_experience
+                      }
                       onChange={(e) =>
                         handleInputChange(
                           "years_experience",
-                          parseInt(e.target.value) || 0
+                          e.target.value === "" ? 0 : parseInt(e.target.value)
                         )
                       }
-                      placeholder="5"
+                      placeholder="Ej: 5"
                       min="0"
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
@@ -756,14 +744,18 @@ const TherapistRegistrationPage: React.FC = () => {
                     <input
                       id="session_price"
                       type="number"
-                      value={formData.session_price}
+                      value={
+                        formData.session_price === 0
+                          ? ""
+                          : formData.session_price
+                      }
                       onChange={(e) =>
                         handleInputChange(
                           "session_price",
-                          parseFloat(e.target.value) || 0
+                          e.target.value === "" ? 0 : parseFloat(e.target.value)
                         )
                       }
-                      placeholder="60"
+                      placeholder="Ej: 60"
                       min="0"
                       step="0.01"
                       required
