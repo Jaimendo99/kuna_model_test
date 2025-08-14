@@ -716,17 +716,30 @@ const TherapistRegistrationPage: React.FC = () => {
                     <input
                       id="years_experience"
                       type="number"
-                      value={
-                        formData.years_experience === 0
-                          ? ""
-                          : formData.years_experience
-                      }
-                      onChange={(e) =>
-                        handleInputChange(
-                          "years_experience",
-                          e.target.value === "" ? 0 : parseInt(e.target.value)
-                        )
-                      }
+                      value={formData.years_experience || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "" || /^\d+$/.test(value)) {
+                          handleInputChange(
+                            "years_experience",
+                            value === "" ? 0 : parseInt(value)
+                          );
+                        }
+                      }}
+                      onKeyPress={(e) => {
+                        if (
+                          !/[0-9]/.test(e.key) &&
+                          ![
+                            "Backspace",
+                            "Delete",
+                            "ArrowLeft",
+                            "ArrowRight",
+                            "Tab",
+                          ].includes(e.key)
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
                       placeholder="Ej: 5"
                       min="0"
                       required
@@ -744,20 +757,33 @@ const TherapistRegistrationPage: React.FC = () => {
                     <input
                       id="session_price"
                       type="number"
-                      value={
-                        formData.session_price === 0
-                          ? ""
-                          : formData.session_price
-                      }
-                      onChange={(e) =>
-                        handleInputChange(
-                          "session_price",
-                          e.target.value === "" ? 0 : parseFloat(e.target.value)
-                        )
-                      }
+                      value={formData.session_price || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "" || /^\d+(\.\d{0,2})?$/.test(value)) {
+                          handleInputChange(
+                            "session_price",
+                            value === "" ? 0 : parseFloat(value)
+                          );
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (
+                          !/[0-9.]/.test(e.key) &&
+                          ![
+                            "Backspace",
+                            "Delete",
+                            "ArrowLeft",
+                            "ArrowRight",
+                            "Tab",
+                          ].includes(e.key)
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
                       placeholder="Ej: 60"
                       min="0"
-                      step="0.01"
+                      step="1"
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
