@@ -72,6 +72,7 @@ class TherapistCreate(BaseModel):
     specialties: List[str]
     therapeutic_approaches: List[str]
     session_price: float
+    price_negotiable: bool = False
     country: str
     city: str
     remote: bool = False
@@ -104,6 +105,7 @@ class TherapistResponse(BaseModel):
     specialties: List[str]
     therapeutic_approaches: List[str]
     session_price: float
+    price_negotiable: bool
     country: str
     city: str
     remote: bool
@@ -128,6 +130,7 @@ class TherapistRegistrationRequest(BaseModel):
     specialties: List[str]
     therapeutic_approaches: List[str]
     session_price: float
+    price_negotiable: bool = False
     country: str
     city: str
     remote: bool

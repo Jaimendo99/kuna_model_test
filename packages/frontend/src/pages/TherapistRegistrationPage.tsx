@@ -21,6 +21,7 @@ interface TherapistFormData {
   specialties: string[];
   therapeutic_approaches: string[];
   session_price: number;
+  price_negotiable: boolean;
   country: string;
   city: string;
   remote: boolean;
@@ -133,6 +134,7 @@ const TherapistRegistrationPage: React.FC = () => {
     specialties: [],
     therapeutic_approaches: [],
     session_price: 0,
+    price_negotiable: false,
     country: "",
     city: "",
     remote: false,
@@ -1176,6 +1178,30 @@ const TherapistRegistrationPage: React.FC = () => {
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        id="price_negotiable"
+                        type="checkbox"
+                        checked={formData.price_negotiable}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "price_negotiable",
+                            e.target.checked
+                          )
+                        }
+                        className="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
+                      />
+                      <label
+                        htmlFor="price_negotiable"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        Estoy dispuesto/a a negociar el precio según el caso del
+                        paciente
+                      </label>
+                    </div>
                   </div>
                 </div>
 

@@ -81,6 +81,8 @@ class Therapist(Base):
     specialties = Column(JSON)  # Array of specialties
     therapeutic_approaches = Column(JSON)  # Array of approaches
     session_price = Column(Float)
+    # Willing to negotiate price
+    price_negotiable = Column(Boolean, default=False)
     country = Column(String)
     city = Column(String)
     remote = Column(Boolean, default=False)
@@ -106,7 +108,8 @@ if DATABASE_URL.startswith("postgresql"):
     engine = create_engine(DATABASE_URL)
 else:
     # SQLite configuration
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    engine = create_engine(DATABASE_URL, connect_args={
+                           "check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

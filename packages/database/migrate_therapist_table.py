@@ -67,6 +67,7 @@ def migrate_database():
             ("weekly_availability", "TEXT"),
             ("commitment_level", "TEXT"),
             ("additional_info", "TEXT"),
+            ("price_negotiable", "BOOLEAN DEFAULT FALSE"),
         ]
 
         print("Adding new columns to therapists table:")
