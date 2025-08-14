@@ -2,6 +2,17 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 
+interface TimeSlot {
+  start: string;
+  end: string;
+}
+
+interface DaySchedule {
+  day: string;
+  available: boolean;
+  timeSlots: TimeSlot[];
+}
+
 interface TherapistFormData {
   name: string;
   professional_titles: string;
@@ -20,6 +31,7 @@ interface TherapistFormData {
   therapeutic_style: string[];
   age_groups: string[];
   weekly_availability: string;
+  schedule: DaySchedule[];
   commitment_level: string;
   additional_info: string;
 }
@@ -71,6 +83,41 @@ const COMMITMENT_LEVELS = [
   "Alta disponibilidad / puedo recibir varios pacientes nuevos por semana",
 ];
 
+const DAYS_OF_WEEK = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+];
+
+const COMMON_TIME_SLOTS = [
+  "08:00",
+  "09:00",
+  "10:00",
+  "11:00",
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+  "19:00",
+  "20:00",
+  "21:00",
+];
+
+const createDefaultSchedule = (): DaySchedule[] => {
+  return DAYS_OF_WEEK.map((day) => ({
+    day,
+    available: false,
+    timeSlots: [],
+  }));
+};
+
 const TherapistRegistrationPage: React.FC = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,6 +143,7 @@ const TherapistRegistrationPage: React.FC = () => {
     therapeutic_style: [],
     age_groups: [],
     weekly_availability: "",
+    schedule: createDefaultSchedule(),
     commitment_level: "",
     additional_info: "",
   });
@@ -143,8 +191,350 @@ const TherapistRegistrationPage: React.FC = () => {
     }
   };
 
+  // Schedule management functions
+  const handleDayToggle = (dayIndex: number, available: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      schedule: prev.schedule.map((daySchedule, index) =>
+        index === dayIndex
+          ? {
+              ...daySchedule,
+              available,
+              timeSlots: available ? daySchedule.timeSlots : [],
+            }
+          : daySchedule
+      ),
+    }));
+  };
+
+  const setQuickSchedule = (type: "business" | "flexible" | "weekend") => {
+    let newSchedule = createDefaultSchedule();
+
+    switch (type) {
+      case "business":
+        // Monday to Friday, 9-17
+        newSchedule = newSchedule.map((day, index) => {
+          if (index < 5) {
+            // Monday to Friday
+            return {
+              ...day,
+              available: true,
+              timeSlots: [{ start: "09:00", end: "17:00" }],
+            };
+          }
+          return day;
+        });
+        break;
+      case "flexible":
+        // Monday to Friday, 10-19 with lunch break
+        newSchedule = newSchedule.map((day, index) => {
+          if (index < 5) {
+            // Monday to Friday
+            return {
+              ...day,
+              available: true,
+              timeSlots: [
+                { start: "10:00", end: "13:00" },
+                { start: "14:00", end: "19:00" },
+              ],
+            };
+          }
+          return day;
+        });
+        break;
+      case "weekend":
+        // Saturday and Sunday, 10-16
+        newSchedule = newSchedule.map((day, index) => {
+          if (index === 5 || index === 6) {
+            // Saturday and Sunday
+            return {
+              ...day,
+              available: true,
+              timeSlots: [{ start: "10:00", end: "16:00" }],
+            };
+          }
+          return day;
+        });
+        break;
+    }
+
+    setFormData((prev) => ({ ...prev, schedule: newSchedule }));
+  };
+
+  const addTimeSlot = (dayIndex: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      schedule: prev.schedule.map((daySchedule, index) =>
+        index === dayIndex
+          ? {
+              ...daySchedule,
+              timeSlots: [
+                ...daySchedule.timeSlots,
+                { start: "09:00", end: "17:00" },
+              ],
+            }
+          : daySchedule
+      ),
+    }));
+  };
+
+  const updateTimeSlot = (
+    dayIndex: number,
+    slotIndex: number,
+    field: "start" | "end",
+    value: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      schedule: prev.schedule.map((daySchedule, index) =>
+        index === dayIndex
+          ? {
+              ...daySchedule,
+              timeSlots: daySchedule.timeSlots.map((slot, sIndex) => {
+                if (sIndex === slotIndex) {
+                  const updatedSlot = { ...slot, [field]: value };
+                  // Validate that end time is after start time
+                  if (field === "start" && updatedSlot.end <= value) {
+                    const startIndex = COMMON_TIME_SLOTS.indexOf(value);
+                    const nextTimeIndex = Math.min(
+                      startIndex + 1,
+                      COMMON_TIME_SLOTS.length - 1
+                    );
+                    updatedSlot.end = COMMON_TIME_SLOTS[nextTimeIndex];
+                  } else if (field === "end" && updatedSlot.start >= value) {
+                    const endIndex = COMMON_TIME_SLOTS.indexOf(value);
+                    const prevTimeIndex = Math.max(endIndex - 1, 0);
+                    updatedSlot.start = COMMON_TIME_SLOTS[prevTimeIndex];
+                  }
+                  return updatedSlot;
+                }
+                return slot;
+              }),
+            }
+          : daySchedule
+      ),
+    }));
+  };
+
+  const removeTimeSlot = (dayIndex: number, slotIndex: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      schedule: prev.schedule.map((daySchedule, index) =>
+        index === dayIndex
+          ? {
+              ...daySchedule,
+              timeSlots: daySchedule.timeSlots.filter(
+                (_, sIndex) => sIndex !== slotIndex
+              ),
+            }
+          : daySchedule
+      ),
+    }));
+  };
+
+  // Convert schedule to readable string for backend compatibility
+  const scheduleToString = (schedule: DaySchedule[]): string => {
+    const availableDays = schedule.filter(
+      (day) => day.available && day.timeSlots.length > 0
+    );
+    if (availableDays.length === 0) return "";
+
+    return availableDays
+      .map((day) => {
+        const slots = day.timeSlots
+          .map((slot) => `${slot.start}-${slot.end}`)
+          .join(", ");
+        return `${day.day}: ${slots}`;
+      })
+      .join("; ");
+  };
+
+  // Schedule Picker Component
+  const SchedulePicker: React.FC = () => {
+    const schedulePreview = scheduleToString(formData.schedule);
+
+    return (
+      <div className="space-y-6">
+        <div className="text-sm text-gray-600 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          📅 <strong>Instrucciones:</strong> Selecciona los días que estarás
+          disponible y agrega los horarios específicos para cada día. Puedes
+          agregar múltiples bloques de horarios por día.
+        </div>
+
+        {/* Quick Schedule Presets */}
+        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h4 className="text-sm font-medium text-gray-900 mb-3">
+            ⚡ Plantillas rápidas:
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setQuickSchedule("business")}
+              className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md hover:bg-blue-200 transition-colors"
+            >
+              Horario comercial (L-V 9-17)
+            </button>
+            <button
+              type="button"
+              onClick={() => setQuickSchedule("flexible")}
+              className="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-md hover:bg-green-200 transition-colors"
+            >
+              Horario flexible (L-V 10-13, 14-19)
+            </button>
+            <button
+              type="button"
+              onClick={() => setQuickSchedule("weekend")}
+              className="text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded-md hover:bg-purple-200 transition-colors"
+            >
+              Solo fines de semana (S-D 10-16)
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Estas plantillas se pueden personalizar después
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {formData.schedule.map((daySchedule, dayIndex) => (
+            <div
+              key={daySchedule.day}
+              className={`border rounded-lg p-4 space-y-3 transition-all duration-200 ${
+                daySchedule.available
+                  ? "border-teal-200 bg-teal-50"
+                  : "border-gray-200 bg-gray-50"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id={`day-${dayIndex}`}
+                    checked={daySchedule.available}
+                    onChange={(e) =>
+                      handleDayToggle(dayIndex, e.target.checked)
+                    }
+                    className="w-5 h-5 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
+                  />
+                  <label
+                    htmlFor={`day-${dayIndex}`}
+                    className={`text-base font-medium cursor-pointer ${
+                      daySchedule.available ? "text-teal-900" : "text-gray-500"
+                    }`}
+                  >
+                    {daySchedule.day}
+                  </label>
+                  {daySchedule.available &&
+                    daySchedule.timeSlots.length > 0 && (
+                      <span className="text-xs bg-teal-200 text-teal-800 px-2 py-1 rounded-full">
+                        {daySchedule.timeSlots.length} horario
+                        {daySchedule.timeSlots.length !== 1 ? "s" : ""}
+                      </span>
+                    )}
+                </div>
+                {daySchedule.available && (
+                  <button
+                    type="button"
+                    onClick={() => addTimeSlot(dayIndex)}
+                    className="text-sm bg-teal-600 text-white px-3 py-1.5 rounded-md hover:bg-teal-700 transition-colors shadow-sm"
+                  >
+                    + Agregar horario
+                  </button>
+                )}
+              </div>
+
+              {daySchedule.available && (
+                <div className="space-y-2 ml-8">
+                  {daySchedule.timeSlots.map((slot, slotIndex) => (
+                    <div
+                      key={slotIndex}
+                      className="flex items-center space-x-3 bg-white p-2 rounded border border-teal-200"
+                    >
+                      <span className="text-sm text-gray-600 min-w-[30px]">
+                        De
+                      </span>
+                      <select
+                        value={slot.start}
+                        onChange={(e) =>
+                          updateTimeSlot(
+                            dayIndex,
+                            slotIndex,
+                            "start",
+                            e.target.value
+                          )
+                        }
+                        className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      >
+                        {COMMON_TIME_SLOTS.map((time) => (
+                          <option key={time} value={time}>
+                            {time}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="text-gray-500 text-sm">a</span>
+                      <select
+                        value={slot.end}
+                        onChange={(e) =>
+                          updateTimeSlot(
+                            dayIndex,
+                            slotIndex,
+                            "end",
+                            e.target.value
+                          )
+                        }
+                        className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      >
+                        {COMMON_TIME_SLOTS.filter(
+                          (time) => time > slot.start
+                        ).map((time) => (
+                          <option key={time} value={time}>
+                            {time}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => removeTimeSlot(dayIndex, slotIndex)}
+                        className="text-red-600 hover:text-red-800 hover:bg-red-50 text-sm px-2 py-1.5 rounded transition-colors"
+                        title="Eliminar horario"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
+                  {daySchedule.timeSlots.length === 0 && (
+                    <div className="text-sm text-gray-500 italic p-2 bg-gray-100 rounded border border-gray-200">
+                      Haz clic en "Agregar horario" para especificar las horas
+                      disponibles
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Schedule Preview */}
+        {schedulePreview && (
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h4 className="text-sm font-medium text-gray-900 mb-2">
+              📋 Vista previa de tu horario:
+            </h4>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {schedulePreview}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if at least one day is available with time slots
+    const hasAvailableSchedule = formData.schedule.some(
+      (day) => day.available && day.timeSlots.length > 0
+    );
 
     // Required text/number fields
     if (
@@ -153,13 +543,19 @@ const TherapistRegistrationPage: React.FC = () => {
       !formData.email ||
       !formData.country ||
       !formData.city ||
-      !formData.weekly_availability ||
+      !hasAvailableSchedule ||
       !formData.commitment_level ||
       !formData.session_price ||
       !formData.years_experience ||
       !formData.bio
     ) {
-      alert("Por favor completa todos los campos obligatorios.");
+      if (!hasAvailableSchedule) {
+        alert(
+          "Por favor especifica tu disponibilidad horaria para al menos un día de la semana."
+        );
+      } else {
+        alert("Por favor completa todos los campos obligatorios.");
+      }
       return;
     }
 
@@ -199,7 +595,14 @@ const TherapistRegistrationPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await api.registerTherapist(formData);
+      // Convert schedule to string format for backend compatibility
+      const scheduleString = scheduleToString(formData.schedule);
+      const submissionData = {
+        ...formData,
+        weekly_availability: scheduleString,
+      };
+
+      await api.registerTherapist(submissionData);
       alert(
         "¡Registro exitoso! Tu perfil ha sido añadido a nuestra base de datos."
       );
@@ -259,7 +662,7 @@ const TherapistRegistrationPage: React.FC = () => {
                       htmlFor="professional_id_number"
                       className="block text-sm font-semibold text-gray-900"
                     >
-                      Número de cédula profesional / registro local *
+                      Código ACCES / Registro Profesional Local *
                     </label>
                     <input
                       id="professional_id_number"
@@ -270,7 +673,7 @@ const TherapistRegistrationPage: React.FC = () => {
                           e.target.value
                         )
                       }
-                      placeholder="Número de cédula o registro profesional"
+                      placeholder="Código ACCES / registro profesional local"
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     />
@@ -649,23 +1052,9 @@ const TherapistRegistrationPage: React.FC = () => {
               {/* 10. Disponibilidad semanal */}
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-gray-900 border-b pb-2">
-                  10. ¿Cuál es tu disponibilidad semanal promedio? *
+                  10. ¿Cuál es tu disponibilidad semanal? *
                 </h3>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Días y horarios aproximados:
-                  </label>
-                  <textarea
-                    value={formData.weekly_availability}
-                    onChange={(e) =>
-                      handleInputChange("weekly_availability", e.target.value)
-                    }
-                    placeholder="Ej: Lunes a viernes de 9:00 AM a 6:00 PM, Sábados de 10:00 AM a 2:00 PM"
-                    rows={3}
-                    required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 resize-none"
-                  />
-                </div>
+                <SchedulePicker />
               </div>
 
               {/* 11. Nivel de compromiso */}
